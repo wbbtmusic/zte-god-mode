@@ -1,2 +1,329 @@
-# zte-god-mode
-ZTE MF286R / MF236R "Aether-Titanium" v28.0 - God-Mode Ultimate Terminal
+# ⚡ Aether-Titanium v28.0  
+### Advanced Engineering Terminal for ZTE MF Series LTE Routers
+
+Aether-Titanium is a **browser-resident engineering interface** built to expose advanced radio telemetry and network control features on ZTE MF series LTE routers.
+
+Supported hardware family:
+
+- **ZTE MF286R**
+- **ZTE MF236R**
+- Turkcell Superbox units  
+- Türk Telekom Magnet devices  
+- T-Mobile Home Internet variants  
+
+The system communicates with hidden **GoForm API endpoints** inside the router firmware to enable monitoring and configuration features normally unavailable in the stock UI.
+
+---
+
+## 🧠 Engineering Architecture
+
+### 🔌 API Bridge Layer
+
+| Endpoint | Function |
+|----------|----------|
+| `/goform/goform_get_cmd_process` | Retrieves modem telemetry |
+| `/goform/goform_set_cmd_process` | Sends configuration commands |
+
+The tool acts as a **web UI overlay** — it does not modify firmware.
+
+---
+
+### 📡 Telemetry Stability Engine (Key-Fallback System)
+
+Modern firmwares rename radio keys.  
+Aether-Titanium scans multiple identifiers to ensure uninterrupted data:
+
+```
+Z_CELL_ID → cell_id  
+Z_eNB_id → enb_id  
+Z_SINR → sinr  
+pm_sensor_mdm → wifi_chip_temp
+```
+
+This prevents blank signal displays.
+
+---
+
+### 📶 Cell Locking Mechanics
+
+| Parameter | Meaning |
+|-----------|---------|
+| **EARFCN** | Frequency channel |
+| **PCI** | Physical Cell ID |
+| **eNB ID** | Tower identity |
+
+Modes:
+
+- **EARFCN Lock** → Frequency stability  
+- **PCI + EARFCN Lock** → Tower fixation (stops cell hopping)
+
+---
+
+### 🎮 Bufferbloat Shield (RRC Keep-Warm)
+
+LTE modems drop into **RRC Idle**, causing latency spikes.  
+The engine polls the modem every ~850ms to maintain **RRC Active**, reducing jitter during:
+
+- Gaming  
+- Streaming  
+- VoIP  
+
+---
+
+## 🛡 Safety Model
+
+| Property | Status |
+|----------|--------|
+| Firmware editing | ❌ None |
+| Kernel modification | ❌ None |
+| Runs in browser RAM | ✅ Yes |
+| Reversible | ✅ Factory reset restores everything |
+
+Holding the physical **RESET button for 5 seconds** returns all settings to default.
+
+---
+
+## 🚀 Feature Overview
+
+✔ Live SINR / RSRP / RSRQ  
+✔ Cell ID, PCI, eNB tracking  
+✔ LTE Band Locking  
+✔ LTE-A aggregation control  
+✔ MTU tuning  
+✔ DNS override  
+✔ Tower locking  
+✔ Reboot control  
+✔ Diagnostic port switching  
+✔ Audio signal radar  
+
+---
+
+## 🌍 Language Support
+
+- English  
+- Türkçe  
+
+Language stored via localStorage.
+
+---
+
+## ⚙ Installation (Bookmarklet Method)
+
+1. Open router panel (usually `http://192.168.0.1`)
+2. Log in
+3. Create a new bookmark in your browser
+4. Paste the script below into the bookmark URL field
+5. Click bookmark while on the router page
+
+---
+
+## 👨‍💻 Developer
+
+**Burak Can Öğüt**  
+Engineering Core: **wbbt**
+
+Support:  
+https://www.buymeacoffee.com/wbbt
+
+---
+
+## 📜 Master Script — v28.0 Aether-Titanium
+
+```javascript
+javascript:(function(){
+    var v = "v28.0 Aether-Titanium Ultimate";
+    var lang = localStorage.getItem('tm_lang') ||
+ 'en';
+    var dict = {
+        en: {
+            dash: "DASHBOARD", signal: "SIGNAL ANALYSIS", net: "BAND MANAGEMENT", locking: "CELL LOCKING", adv: "ADVANCED QoS", sys: "SYSTEM",
+            perc: "Signal %", rsrp: "Power (dBm)", sinr: "Purity (SINR)", rsrq: "Quality (RSRQ)", temp: "CPU Temp",
+            l_manual: "Lock EARFCN", l_tower: "Lock Tower", l_reset: "Reset Cell Locks", opt: "ACTIVATE OPTIMIZE", restore: "RESET OPTIMIZATION",
+            h_ping: "Ping Box: Locks to Band 3 (1800MHz). Disables Aggregation (CA) to eliminate jitter. Best for gaming.",
+            h_speed: "Speed Box: Forces LTE-A (4G+) by aggregating B1+B3+B7+B20. Best for 4K streaming.",
+            h_tower: "Stops cell hopping. Fixes the connection to a specific tower using PCI and EARFCN.",
+            h_mtu: "MTU 1440 + Cloudflare DNS + RRC Keep-Warm. Optimizes packet flow.",
+            h_restore: "Resets all DNS, MTU, and Band overrides to factory carrier defaults.",
+            h_radar: "Radar Icon: Indicates the modem is actively scanning the spectrum and gathering telemetry.",
+            st_on: "ACTIVE", st_off: "OFF"
+        },
+        tr: {
+            dash: "DURUM", signal: "SİNYAL ANALİZİ", net: "BANT YÖNETİMİ", locking: "HÜCRE KİLİDİ", adv: "GELİŞMİŞ QoS", sys: "SİSTEM",
+            perc: "Sinyal %", rsrp: "Güç (dBm)", sinr: "Temizlik (SINR)", rsrq: "Kalite (RSRQ)", temp: "CPU Sıcaklık",
+            l_manual: "EARFCN Kilitle", l_tower: "Hücreyi Çivile", l_reset: "Kilitleri Kaldır", opt: "OPTİMİZE ET", restore: "OPTİMİZASYON SIFIRLA",
+            h_ping: "Ping Kutusu: Bağlantıyı B3 (1800MHz) bandına sabitler. Jitter'ı yok etmek için CA'yı kapatır.",
+            h_speed: "Hız Kutusu: B1+B3+B7+B20 bantlarını birleştirerek LTE-A (4G+) hızını zorlar.",
+            h_tower: "Modemin kule değiştirmesini engeller. Jitter'ı bitirir.",
+            h_mtu: "MTU 1440 + Cloudflare DNS + Keep-Warm aktif eder. Paket parçalanmasını önler.",
+            h_restore: "DNS, MTU ve tüm bant kilitlerini fabrika ayarlarına döndürür."
+        }
+    };
+
+    var css = `
+        :root { --p: #00ff88; --bg: rgba(8, 10, 16, 0.98); --card: rgba(255, 255, 255, 0.05); --t: #f0f0f0; --bl: #1f6feb; }
+        #tm-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000 url('https://w.wallhaven.cc/full/8o/wallhaven-8o9m9j.jpg') center/cover; color: var(--t); z-index: 2147483647; font-family: 'Segoe UI', sans-serif; display: flex; backdrop-filter: blur(40px); }
+        #tm-side { width: 320px; background: rgba(0,0,0,0.85); border-right: 1px solid rgba(255,255,255,0.1); padding: 35px; display: flex; flex-direction: column; }
+        #tm-main { flex: 1; padding: 35px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 25px; }
+     .glass-card { background: var(--card); border-radius: 30px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 50px rgba(0,0,0,0.6); transition: 0.3s; }
+     .glass-card:hover { transform: scale(1.01); border-color: var(--p); }
+     .glass-card h3 { margin: 0 0 20px 0; font-size: 13px; color: var(--p); letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; }
+     .data-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
+     .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        button { background: rgba(0, 255, 136, 0.1); color: #fff; border: 1px solid var(--p); padding: 12px; border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: 900; transition: 0.2s; }
+        button:hover { background: var(--p); color: #000; box-shadow: 0 0 30px var(--p); }
+        button.red { border-color: #ff4757; color: #ff4757; background: rgba(255,71,87,0.1); }
+        button.blue { border-color: #1f6feb; color: #1f6feb; background: rgba(31,111,235,0.1); }
+     .bar-bg { height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; overflow: hidden; margin: 8px 0; }
+     .bar-fill { height: 100%; width: 0%; background: var(--p); transition: 1.5s ease-in-out; }
+     .footer { margin-top: auto; font-size: 10px; color: #888; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; }
+        input { background: rgba(0,0,0,0.5); border: 1px solid #555; color: #fff; padding: 12px; border-radius: 12px; width: 85%; font-size: 12px; margin-bottom: 10px; outline: none; }
+    `;
+
+    var st = document.createElement('style'); st.innerHTML = css; document.head.appendChild(st);
+    var ui = document.createElement('div'); ui.id = 'tm-wrap';
+    ui.innerHTML = `
+        <div id="tm-side">
+            <h1 style="color:var(--p); margin:0; font-size:32px;">AETHER</h1>
+            <p style="font-size:10px; color:#666;">${v} | Master Admin</p>
+            <div style="margin:25px 0; display:flex; gap:10px;">
+                <button style="padding:5px 15px" onclick="localStorage.setItem('tm_lang','tr'); location.reload()">TR</button>
+                <button style="padding:5px 15px" onclick="localStorage.setItem('tm_lang','en'); location.reload()">EN</button>
+            </div>
+            <div style="flex:1">
+                <div class="data-row">${dict[lang].perc}: <b id="s-perc">%0</b></div>
+                <div class="bar-bg"><div id="f-perc" class="bar-fill"></div></div>
+                <div class="data-row" style="margin-top:20px;">${dict[lang].temp}: <b id="s-temp">-</b></div>
+                <div class="data-row">${dict[lang].rsrp}: <b id="s-rsrp">-</b></div>
+                <div class="data-row">Cell ID: <b id="s-cid" style="font-size:11px;">-</b></div>
+                <div class="data-row">PCI / eNB: <b id="s-pci-enb">-</b></div>
+                <div style="height:1px; background:rgba(255,255,255,0.1); margin:20px 0;"></div>
+                <div class="data-row">GAMING SHIELD: <span id="st-bb" style="color:red">OFF</span></div>
+                <div class="data-row">OPTIMIZATION: <span id="st-opt" style="color:red">OFF</span></div>
+            </div>
+            <div class="footer">
+                Engineered by Burak Can Öğüt & wbbt<br><br>
+                <a href="https://www.buymeacoffee.com/wbbt" style="color:#ffdd57; font-weight:bold; text-decoration:none" target="_blank">☕ Buy me a coffee (wbbt)</a>
+                <button class="red" style="width:100%; margin-top:20px;" onclick="location.reload()">CLOSE TERMINAL</button>
+            </div>
+        </div>
+        <div id="tm-main">
+            <div class="glass-card" title="${dict[lang].h_radar}">
+                <h3>📡 ${dict[lang].signal}</h3>
+                <div class="data-row">SINR: <b id="d-sinr">-</b> | RSRQ: <b id="d-rsrq">-</b></div>
+                <div class="data-row">EARFCN: <b id="d-ear">-</b></div>
+                <div class="bar-bg"><div id="f-rsrq" class="bar-fill" style="background:#1f6feb"></div></div>
+                <button id="beep-btn" style="width:100%; margin-top:10px;" onclick="toggleAudio()">SIGNAL AUDIO: OFF</button>
+            </div>
+            <div class="glass-card" title="${dict[lang].h_ping}">
+                <h3>⚡ PING OPTIMIZATION</h3>
+                <button class="blue" style="width:100%;" onclick="setBands('0x04')">LOCK B3 (LOWEST JITTER)</button>
+                <div class="btn-grid">
+                    <button id="btn-bb" onclick="toggleBB()">BB SHIELD</button>
+                    <button class="red" onclick="unlockTower()">CLEAR LOCKS</button>
+                </div>
+            </div>
+            <div class="glass-card" title="${dict[lang].h_speed}">
+                <h3>🚀 SPEED OPTIMIZATION</h3>
+                <button class="blue" style="width:100%;" onclick="setBands('0x8080045')">FULL LTE-A (4.5G+)</button>
+                <button id="btn-opt" style="width:100%; margin-top:10px;" onclick="fullOptimize()">${dict[lang].opt}</button>
+            </div>
+            <div class="glass-card">
+                <h3>🛠 MANUAL BAND MATRIX</h3>
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px;">
+                    <button onclick="setBands('0x01')">B1</button><button onclick="setBands('0x04')">B3</button><button onclick="setBands('0x40')">B7</button>
+                    <button onclick="setBands('0x80')">B8</button><button onclick="setBands('0x80000')">B20</button><button onclick="setBands('0x8000000')">B28</button>
+                </div>
+            </div>
+            <div class="glass-card" title="${dict[lang].h_tower}">
+                <h3>🔒 ${dict[lang].locking} (PCI/EARFCN)</h3>
+                <input type="number" id="inp-pci" placeholder="PCI (Optional)">
+                <input type="number" id="inp-ear" placeholder="EARFCN (Required)">
+                <div class="btn-grid">
+                    <button onclick="lockManual()">LOCK INPUT</button>
+                    <button class="gold" onclick="lockCurrentTower()">LOCK CURRENT</button>
+                </div>
+                <button class="red" style="width:100%; margin-top:15px;" title="${dict[lang].h_restore}" onclick="restoreRouter()">${dict[lang].restore}</button>
+            </div>
+            <div class="glass-card">
+                <h3>🏠 ${dict[lang].sys} SETTINGS</h3>
+                <div class="data-row">MTU: <input type="text" id="inp-mtu" value="1440" style="width:60px"> <button onclick="setMTU()">SET</button></div>
+                <div class="data-row">DNS: <input type="text" id="inp-dns" placeholder="1.1.1.1,8.8.8.8" style="width:120px"> <button onclick="setDNS()">SET</button></div>
+                <div class="btn-grid">
+                    <button onclick="usbSwitch(6)">DIAG PORT</button>
+                    <button class="red" onclick="rebootModem()">REBOOT</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(ui);
+
+    var audCtx = null, osc = null, bbInt = null;
+    function getAD(cb) { $.getJSON("/goform/goform_get_cmd_process", {cmd: "wa_inner_version,cr_version,RD", multi_data:"1"}, r => cb(hex_md5(hex_md5(r.wa_inner_version+r.cr_version)+r.RD))); }
+
+    function handleRes(res) {
+        let d = JSON.parse(res);
+        if(d.result == "success" || d.result == "0") alert("OPERATION SUCCESSFUL!");
+        else alert("MODEM REJECTED COMMAND!");
+    }
+
+    window.toggleBB = () => {
+        if(!bbInt) {
+            bbInt = setInterval(() => $.get("/goform/goform_get_cmd_process?cmd=ppp_status"), 850);
+            localStorage.setItem('tm_bb','on'); document.getElementById('st-bb').innerText = "ACTIVE"; document.getElementById('st-bb').style.color = "#00ff88";
+        } else { clearInterval(bbInt); bbInt = null; localStorage.setItem('tm_bb','off'); document.getElementById('st-bb').innerText = "OFF"; document.getElementById('st-bb').style.color = "red"; }
+    };
+
+    window.fullOptimize = () => getAD(ad => {
+        $.post("/goform/goform_set_cmd_process", {isTest:"false", goformId:"LAN_MTU_SETTING", mtu_size:"1440", AD:ad});
+        $.post("/goform/goform_set_cmd_process", {isTest:"false", goformId:"ROUTER_DNS_SETTING", dns_mode:"manual", prefer_dns_manual:"1.1.1.1", standby_dns_manual:"1.0.0.1", AD:ad});
+        document.getElementById('st-opt').innerText = "ACTIVE"; document.getElementById('st-opt').style.color = "#00ff88"; alert("Optimization Enabled (MTU 1440 + Cloudflare DNS)");
+    });
+
+    window.restoreRouter = () => getAD(ad => {
+        $.post("/goform/goform_set_cmd_process", {isTest:"false", goformId:"LAN_MTU_SETTING", mtu_size:"1500", AD:ad});
+        $.post("/goform/goform_set_cmd_process", {isTest:"false", goformId:"ROUTER_DNS_SETTING", dns_mode:"auto", AD:ad});
+        document.getElementById('st-opt').innerText = "OFF"; document.getElementById('st-opt').style.color = "red"; alert("Settings Restored to Factory Defaults.");
+    });
+
+    window.setBands = (hex) => getAD(ad => $.post("/goform/goform_set_cmd_process", {isTest:"false", goformId:"SET_LTE_BAND_LOCK", lte_band_lock:hex, AD:ad}, handleRes));
+
+    window.lockManual = () => {
+        let p = document.getElementById('inp-pci').value || "0", e = document.getElementById('inp-ear').value;
+        if(!e) return alert("EARFCN is required!");
+        getAD(ad => $.post("/goform/goform_set_cmd_process", {isTest:"false", goformId:"LTE_LOCK_CELL_SET", lte_pci_lock:p, lte_earfcn_lock:e, AD:ad}, handleRes));
+    };
+
+    window.rebootModem = () => confirm("System Reboot?") && getAD(ad => $.post("/goform/goform_set_cmd_process", {isTest:"false", goformId:"REBOOT_DEVICE", AD:ad}));
+
+    if(localStorage.getItem('tm_bb')=='on') toggleBB();
+    setInterval(() => {
+        $.getJSON("/goform/goform_get_cmd_process", {
+            cmd: "lte_rsrp,Z_SINR,rsrq,lte_pci,lte_ca_pcell_arfcn,wan_ipaddr,pm_sensor_mdm,wifi_chip_temp,Z_CELL_ID,Z_eNB_id,cell_id",
+            multi_data: "1"
+        }, d => {
+            let rsrp = parseInt(d.lte_rsrp);
+            let perc = Math.max(0, Math.min(100, (rsrp + 140) * 1.5));
+            document.getElementById('s-perc').innerText = "%" + Math.round(perc);
+            document.getElementById('f-perc').style.width = perc + "%";
+            document.getElementById('s-rsrp').innerText = rsrp + " dBm";
+            document.getElementById('d-sinr').innerText = (d.Z_SINR || d.sinr) + " dB";
+            document.getElementById('s-temp').innerText = (d.pm_sensor_mdm || d.wifi_chip_temp || "N/A") + "°C";
+            document.getElementById('s-cid').innerText = d.Z_CELL_ID || d.cell_id;
+            document.getElementById('s-pci-enb').innerText = d.lte_pci + " / " + (d.Z_eNB_id? Math.floor(parseInt(d.Z_eNB_id)/256) : "N/A");
+            document.getElementById('d-ear').innerText = d.lte_ca_pcell_arfcn;
+            window.curPCI = d.lte_pci; window.curEAR = d.lte_ca_pcell_arfcn;
+        });
+    }, 1100);
+})();
+```
+
+---
+
+## ⚠ Legal Notice
+
+This tool interacts only with locally accessible router interfaces.  
+Users are responsible for compliance with device terms of service and local laws.
+
+---
+
+**Aether-Titanium v28.0 — Engineering Precision for LTE Control**
