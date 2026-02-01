@@ -175,7 +175,3 @@ This API documentation is community-researched and not officially published by Z
 ```
 
 ---
-
-
-İstersen sıradaki dosyayı da yapalım:  
-**SMS API**, **Reboot komutu**, ya da **Login/Auth token sistemi**?
