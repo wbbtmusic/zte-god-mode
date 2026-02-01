@@ -176,13 +176,6 @@ This API documentation is community-researched and not officially published by Z
 
 ---
 
-### ✅ GitHub’da düzgün görünmesi için
-
-- Dosya uzantısı **.md** olacak  
-- Kod blokları üç tilda `~~~` ile kapalı (GitHub sorunsuz işler)  
-- Tablo yapıları GitHub-flavored Markdown uyumlu  
-
----
 
 İstersen sıradaki dosyayı da yapalım:  
 **SMS API**, **Reboot komutu**, ya da **Login/Auth token sistemi**?
